@@ -4,6 +4,8 @@ import com.palmergames.bukkit.towny.TownyMessaging;
 import com.palmergames.bukkit.towny.TownySettings;
 import com.palmergames.bukkit.towny.object.Translation;
 import com.palmergames.bukkit.util.ChatTools;
+import com.palmergames.bukkit.util.Colors;
+
 import org.bukkit.command.CommandSender;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -272,8 +274,7 @@ public enum HelpMenu {
 				.add("fire", "")
 				.add("mobs", "")
 				.add("taxpercent", "")
-				.add("open", "")
-				.add("jail [number] [resident]", "");
+				.add("open", "");
 		}
 	},
 	
@@ -299,6 +300,23 @@ public enum HelpMenu {
 		}
 	},
 	
+	TOWN_JAIL {
+		@Override
+		protected MenuBuilder load() {
+			return new MenuBuilder("town jail")
+				.add("[resident] [hours]", "")
+				.add("[resident] [hours] [jail]", "")
+				.add("[resident] [hours] [jail] [cell]", "");
+		}
+	},
+	
+	TOWN_UNJAIL {
+		@Override
+		protected MenuBuilder load() {
+			return new MenuBuilder("town unjail")
+				.add("[resident]");
+		}
+	},
 
 	TOWN_INVITE {
 		@Override
@@ -335,6 +353,17 @@ public enum HelpMenu {
 			return new MenuBuilder("resident", Translation.of("res_1"))
 				.add(Translation.of("res_2"), Translation.of("res_3"))
 				.add("list", Translation.of("res_4"));
+		}
+	},
+	
+	RESIDENT_JAIL_HELP {
+		@Override
+		protected MenuBuilder load() {
+			return new MenuBuilder("resident jail", "")
+				.add("", "/resident jail", "paybail", "Pays the bail cost to get out of jail.")
+				.add(Colors.LightBlue + Translation.of("msg_resident_bail_amount") + Colors.Green + "$" + TownySettings.getBailAmount())
+				.add(Colors.LightBlue + Translation.of("msg_mayor_bail_amount") + Colors.Green + "$" + TownySettings.getBailAmountMayor())
+				.add(Colors.LightBlue + Translation.of("msg_king_bail_amount") + Colors.Green + "$" + TownySettings.getBailAmountKing());
 		}
 	},
 

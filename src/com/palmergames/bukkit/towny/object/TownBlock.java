@@ -1,6 +1,5 @@
 package com.palmergames.bukkit.towny.object;
 
-import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.TownyMessaging;
 import com.palmergames.bukkit.towny.TownySettings;
 import com.palmergames.bukkit.towny.TownyUniverse;
@@ -9,13 +8,14 @@ import com.palmergames.bukkit.towny.event.PlotChangeTypeEvent;
 import com.palmergames.bukkit.towny.exceptions.AlreadyRegisteredException;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.exceptions.TownyException;
+import com.palmergames.bukkit.towny.object.jail.Jail;
 import com.palmergames.bukkit.towny.object.metadata.CustomDataField;
 import com.palmergames.bukkit.towny.permissions.PermissionNodes;
 import com.palmergames.bukkit.towny.tasks.CooldownTimerTask;
 import com.palmergames.bukkit.towny.tasks.CooldownTimerTask.CooldownType;
+import com.palmergames.bukkit.towny.utils.JailUtil;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -32,7 +32,8 @@ public class TownBlock extends TownyObject {
 	private boolean outpost = false;
 	private PlotGroup plotGroup;
 	private long claimedAt;
-
+	private Jail jail;
+	
 	//Plot level permissions
 	protected TownyPermission permissions = new TownyPermission();
 	protected boolean isChanged = false;
@@ -254,9 +255,12 @@ public class TownBlock extends TownyObject {
 	}
 	
 	public void setType(TownBlockType type, Resident resident) throws TownyException {
-		// Attempt to clear a jail spawn in case this was a jail plot until now.
-		if (this.isJail())
-			this.getTown().removeJailSpawn(this.getCoord());
+
+		// Delete a jail if this is no longer going to be a jail.
+		if (this.isJail() && !type.equals(TownBlockType.JAIL)) {
+			TownyUniverse.getInstance().getDataSource().removeJail(getJail());
+			setJail(null);
+		}
 
 		if ((getType().equals(TownBlockType.ARENA) || type.equals(TownBlockType.ARENA))
 			&& TownySettings.getPVPCoolDownTime() > 0 
@@ -271,13 +275,8 @@ public class TownBlock extends TownyObject {
 		} else
 			setType(type);
 
-		if (this.isJail()) {
-			Player p = TownyAPI.getInstance().getPlayer(resident);
-			if (p == null)
-				throw new TownyException(Translation.of("msg_err_not_part_town"));
-				
-			this.getTown().addJailSpawn(p.getLocation());
-		}
+		if (this.isJail() && resident.getPlayer().isOnline())
+			JailUtil.createJailPlot(this, getTown(), resident.getPlayer().getLocation());
 
 		this.save();
 	}
@@ -392,6 +391,14 @@ public class TownBlock extends TownyObject {
 		return this.getType() == TownBlockType.JAIL;
 	}
 	
+	public Jail getJail() {
+		return jail;
+	}
+
+	public void setJail(Jail jail) {
+		this.jail = jail;
+	}
+
 	@Override
 	public void addMetaData(@NotNull CustomDataField<?> md) {
 		this.addMetaData(md, true);
