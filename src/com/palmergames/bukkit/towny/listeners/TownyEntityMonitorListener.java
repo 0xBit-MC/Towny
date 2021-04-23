@@ -474,7 +474,7 @@ public class TownyEntityMonitorListener implements Listener {
 					return;
 				
 				// Send to jail. Hours are set later on.
-				JailUtil.jailResident(defenderResident, attackerTown.getJail(0), 0, 0, JailReason.OUTLAW_DEATH, attackerResident.getPlayer());
+				JailUtil.jailResident(defenderResident, attackerTown.getPrimaryJail(), 0, 0, JailReason.OUTLAW_DEATH, attackerResident.getPlayer());
 				return;
 
 			// Try enemy jailing second
@@ -489,19 +489,24 @@ public class TownyEntityMonitorListener implements Listener {
 				if (!CombatUtil.isEnemy(attackerTown, defenderTown))
 					return;
 
+				// Attempt to send them to the Town's primary jail first if it is still in the war.
+				if (War.isWarZone(attackerTown.getPrimaryJail().getTownBlock().getWorldCoord())) {
+					JailUtil.jailResident(defenderResident, attackerTown.getPrimaryJail(), 0, 0, JailReason.PRISONER_OF_WAR, attackerResident.getPlayer());
+					return;
+					
+ 				} else {
 				// Find a jail that hasn't had its HP dropped to 0.
-				for (Jail jail : attackerTown.getJails()) {
-					if (War.isWarZone(jail.getTownBlock().getWorldCoord())) {
-						
-						// Send to jail. Hours are set later on.
-						JailUtil.jailResident(defenderResident, jail, 0, 0, JailReason.PRISONER_OF_WAR, attackerResident.getPlayer());
-						break;
+					for (Jail jail : attackerTown.getJails()) {
+						if (War.isWarZone(jail.getTownBlock().getWorldCoord())) {
+							// Send to jail. Hours are set later on.
+							JailUtil.jailResident(defenderResident, jail, 0, 0, JailReason.PRISONER_OF_WAR, attackerResident.getPlayer());
+							return;
+						}
 					}
-				}
+ 				}
+				// If we've gotten this far the player couldn't be jailed, send a message saying there was no jail.
 				TownyMessaging.sendPrefixedTownMessage(attackerTown, Translation.of("msg_war_player_cant_be_jailed_plot_fallen"));
-
 			}
-
 		}
 	}
 }

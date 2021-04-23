@@ -166,7 +166,8 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 		"embassytax",
 		"title",
 		"surname",
-		"taxpercentcap"
+		"taxpercentcap",
+		"primaryjail"
 	);
 	private static final List<String> townListTabCompletes = Arrays.asList(
 		"residents",
@@ -1525,8 +1526,10 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 				throw new TownyException("You have no town");
 		}
 		
-		if (split.length != 1)
+		if (split.length != 1) {
 			HelpMenu.TOWN_UNJAIL.send(sender);
+			return;
+		}
 
 		Resident jailedResident = TownyUniverse.getInstance().getResident(split[0]);
 		if (jailedResident == null || !jailedResident.isJailed() || (jailedResident.isJailed() && !jailedResident.getJail().getTown().equals(town)))
@@ -2193,6 +2196,10 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 					String[] newSplit = StringMgmt.remFirstArg(split);
 					setTownBlockOwnerPermissions(player, town, newSplit);
 
+				} else if (split[0].equalsIgnoreCase("primaryjail")) {
+					
+					setPrimaryJail(player, town);
+					
 				} else {
 					TownyMessaging.sendErrorMsg(player, Translation.of("msg_err_invalid_property", "town"));
 					return;
@@ -2204,6 +2211,24 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 			if (nation != null)
 				nation.save();
 		}
+	}
+
+	private static void setPrimaryJail(Player player, Town town) {
+		
+		try {
+			if (TownyAPI.getInstance().isWilderness(player.getLocation()))
+				throw new TownyException("This command can only be used in a jail plot.");
+			
+			TownBlock tb = TownyAPI.getInstance().getTownBlock(player.getLocation());
+			if (tb == null || !tb.isJail())
+				throw new TownyException("This command can only be used in a jail plot.");
+			
+			Jail jail = tb.getJail();
+			town.setPrimaryJail(jail);
+		} catch (TownyException e) {
+			TownyMessaging.sendErrorMsg(player, e.getMessage());
+		}
+		
 	}
 
 	private static void parseTownSetHomeblock(Player player, Town town, @Nullable Nation nation) {
