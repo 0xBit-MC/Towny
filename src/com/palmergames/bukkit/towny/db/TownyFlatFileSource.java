@@ -450,9 +450,13 @@ public final class TownyFlatFileSource extends TownyDatabaseHandler {
 					resident.setJail(universe.getJail(UUID.fromString(line)));
 				
 				line = keys.get("jailCell");
+				if (line != null)
+					resident.setJailCell(Integer.valueOf(line));
 				
 				line = keys.get("jailHours");
-
+				if (line != null)
+					resident.setJailHours(Integer.valueOf(line));
+				
 				line = keys.get("friends");
 				if (line != null) {
 					List<Resident> friends = getResidents(line.split(","));
@@ -876,6 +880,13 @@ public final class TownyFlatFileSource extends TownyDatabaseHandler {
 					} catch (Exception e) {
 						town.setDebtBalance(0.0);
 					}
+				
+				line = keys.get("primaryJail");
+				if (line != null) {
+					UUID uuid = UUID.fromString(line);
+					if (TownyUniverse.getInstance().hasJail(uuid))
+						town.setPrimaryJail(TownyUniverse.getInstance().getJail(uuid));
+				}
 
 			} catch (Exception e) {
 				TownyMessaging.sendErrorMsg(Translation.of("flatfile_err_reading_town_file_at_line", town.getName(), line, town.getName()));
@@ -1820,6 +1831,9 @@ public final class TownyFlatFileSource extends TownyDatabaseHandler {
 		// Debt balance
 		list.add("debtBalance=" + town.getDebtBalance());
 
+		// Primary Jail
+		if (town.getPrimaryJail() != null)
+			list.add("primaryJail=" + town.getPrimaryJail().getUUID());
 		/*
 		 *  Make sure we only save in async
 		 */
