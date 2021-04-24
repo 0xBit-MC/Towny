@@ -446,10 +446,8 @@ public class TownyEntityMonitorListener implements Listener {
 
 			// Not if they're already jailed.
 			if (defenderResident.isJailed()) {
-				if (tb.getType() != TownBlockType.JAIL) {
+				if (!tb.isJail())
 					TownyMessaging.sendGlobalMessage(Translation.of("msg_killed_attempting_to_escape_jail", defenderPlayer.getName()));
-					return;
-				}							
 				return;			
 			}
 			

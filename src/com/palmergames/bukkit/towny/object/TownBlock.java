@@ -33,7 +33,7 @@ public class TownBlock extends TownyObject {
 	private PlotGroup plotGroup;
 	private long claimedAt;
 	private Jail jail;
-	
+
 	//Plot level permissions
 	protected TownyPermission permissions = new TownyPermission();
 	protected boolean isChanged = false;
@@ -275,7 +275,7 @@ public class TownBlock extends TownyObject {
 		} else
 			setType(type);
 
-		if (this.isJail() && resident.getPlayer().isOnline())
+		if (this.isJail() && resident.getPlayer() != null)
 			JailUtil.createJailPlot(this, getTown(), resident.getPlayer().getLocation());
 
 		this.save();
