@@ -1114,6 +1114,9 @@ public class Town extends Government implements TownBlockOwner {
 	public void removeJail(Jail jail) {
 		if (hasJails() && hasJail(jail))
 			jails.remove(jail);
+		
+		if (getPrimaryJail() != null && getPrimaryJail().getUUID().equals(jail.getUUID()))
+			setPrimaryJail(null);
 	}
 	
 	public boolean hasJails() {
