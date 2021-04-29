@@ -945,7 +945,7 @@ public class TownyPlayerListener implements Listener {
 		}
 
 		if (resident.isJailed())
-			JailUtil.unJailResident(resident, UnJailReason.LEFT_TOWN);
+			JailUtil.unJailResident(resident, UnJailReason.ESCAPE);
 	}
 	
 	/**

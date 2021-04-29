@@ -427,7 +427,7 @@ public class TownyEntityMonitorListener implements Listener {
 		}
 	}
 	
-	public void isJailingAttackers(Player attackerPlayer, Player defenderPlayer, Resident attackerResident, Resident defenderResident) throws NotRegisteredException {
+	public void isJailingAttackers(Player attackerPlayer, Player defenderPlayer, Resident attackerResident, Resident defenderResident) {
 		if (TownySettings.isJailingAttackingEnemies() || TownySettings.isJailingAttackingOutlaws()) {
 			Location loc = defenderPlayer.getLocation();
 
@@ -455,11 +455,13 @@ public class TownyEntityMonitorListener implements Listener {
 			if (!attackerResident.hasTown()) 
 				return;
 			
-			// Not if victim died in a town that doesn't have the killer as a resident.
-			if (!TownyAPI.getInstance().getTown(loc).hasResident(attackerResident))
+			Town attackerTown = TownyAPI.getInstance().getResidentTownOrNull(attackerResident);
+			if (attackerTown == null)
 				return;
-
-			Town attackerTown = attackerResident.getTown();
+			
+			// Not if victim died in a town that isn't the attackerResident's town.
+			if (!TownyAPI.getInstance().getTown(loc).getUUID().equals(attackerTown.getUUID()))
+				return;
 			
 			// Not if the town has no jails.
 			if (!attackerTown.hasJails()) 
@@ -481,7 +483,9 @@ public class TownyEntityMonitorListener implements Listener {
 				// Not if the victim has no Town.
 				if (!defenderResident.hasTown())
 					return;
-				Town defenderTown = defenderResident.getTown();
+				Town defenderTown = TownyAPI.getInstance().getResidentTownOrNull(defenderResident);
+				if (defenderTown == null)
+					return;
 				
 				// Not if they aren't considered enemies.
 				if (!CombatUtil.isEnemy(attackerTown, defenderTown))
